@@ -21,8 +21,9 @@ namespace ProjectManagement.Application.Features.Projects.Queries.GetAllProjects
         public async Task<List<ProjectResponseDto>>Handle(GetAllProjectsQuery request, CancellationToken cancellationToken)
         {
             var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User not authenticated");
-            
-            var cacheKey = $"projects_{userId}";
+
+            var cacheKey = $"projects_{userId}_{request.PageNumber}_{request.PageSize}_{request.Search}";
+
             var cachedProjects = await _cacheService.GetAsync<List<ProjectResponseDto>>(cacheKey);
             if (cachedProjects is not null)
             {
@@ -31,8 +32,19 @@ namespace ProjectManagement.Application.Features.Projects.Queries.GetAllProjects
             }
 
             Console.WriteLine("FROM DATABASE");
-            var projects = await _context.Projects.Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAt)
-                .Select(x => new ProjectResponseDto
+
+            var query = _context.Projects.Where(x => x.UserId == userId);
+
+            // El Search
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                query = query.Where(x => x.Name.Contains(request.Search) || x.Description.Contains(request.Search));
+            }
+
+            query = query.OrderByDescending(x => x.CreatedAt);
+
+            // El Pagination
+            var projects = await query.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).Select(x => new ProjectResponseDto
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -40,7 +52,7 @@ namespace ProjectManagement.Application.Features.Projects.Queries.GetAllProjects
                     CreatedAt = x.CreatedAt
                 }).ToListAsync(cancellationToken);
 
-            await _cacheService.SetAsync(cacheKey,projects,TimeSpan.FromMinutes(10));
+            await _cacheService.SetAsync(cacheKey, projects, TimeSpan.FromMinutes(10));
             return projects;
         }
     }

@@ -51,34 +51,19 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "Enter JWT token"
     });
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement{
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement{
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference =new Microsoft.OpenApi.Models.OpenApiReference
+                Reference =new OpenApiReference
                 {
-                    Type =Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,Id = "Bearer"
+                    Type = ReferenceType.SecurityScheme,Id = "Bearer"
                 }
             },
             Array.Empty<string>()
         }
     });
 });
-//    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-//    {
-//        {
-//            new OpenApiSecurityScheme
-//            {
-//                Reference = new OpenApiReference
-//                {
-//                    Type = ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            Array.Empty<string>()
-//        }
-//    });
-//});
 
 
 var app = builder.Build();
@@ -98,11 +83,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-//app.UseMiddleware<ExceptionHandlingMiddleware>();
-//app.UseHttpsRedirection();
-//app.UseAuthentication();   
-//app.UseAuthorization();
 
 app.MapControllers();
 

@@ -30,9 +30,9 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ProjectResponseDto>>> GetAll()
+    public async Task<ActionResult<List<ProjectResponseDto>>> GetAll([FromQuery] GetAllProjectsQuery query)
     {
-        var result =await _mediator.Send(new GetAllProjectsQuery());
+        var result = await _mediator.Send(query);
         return Ok(result);
     }
 
